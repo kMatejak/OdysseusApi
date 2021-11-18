@@ -5,14 +5,23 @@ builder.Services.AddDbContext<OdyssDb>(opt => opt.UseInMemoryDatabase("OdyssList
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 var app = builder.Build();
 
-app.MapGet("/", () => "Type three-letter destination code after domain adrress in URL bar, for example 'odyss-api.com/PAN'");
+app.MapGet("/", () => "Type three-letter destination code after domain adress in URL bar, for example 'xxxxx.com/PAN'");
 
 app.MapGet("/{destination}", async (string destination, OdyssDb db) =>
 {
-    var route = await db.Routes.Where(d => d.Destination == destination).FirstAsync();
-    var response = "{" + "\n" + "\tdestination: \'" + route.Destination?.ToString() + "\',\n" + "\tlist: " + route.List?.ToString() + "\n" + "}";
+    var validMessage = "There is no destination with code \"" + destination + "\".";
+    var route = await db.Routes.Where(d => d.Destination == destination).ToListAsync();
 
-    return response;
+    if (route.Count == 0)
+    {
+        var response = "There is no destination with code \"" + destination + "\".";
+        return response;
+    } 
+    else 
+    {
+        var response = "{" + "\n" + "\tdestination: \'" + route[0].Destination?.ToString() + "\',\n" + "\tlist: " + route[0].List?.ToString() + "\n" + "}";
+        return response;
+    }
 });
 
 app.MapGet("/routes", async (OdyssDb db) =>
